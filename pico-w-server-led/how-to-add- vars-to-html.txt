@@ -1,0 +1,7 @@
+HOW TO ADD VARIABLES TO HTML MICRO PYTHON PICO W
+
+TRY AND THEN PUT THESE EXAMPLES LINES IN LINE 100 INSIDE main.py (THE ONE IN THE pico-w-server-led FOLDER, INSIDE THE LAST WHILE LOOP)
+
+response = get_html('index.html')
+temperature = MY_SENSOR_TEMPERATURE_VALUE
+response = response.replace('WORD_INSIDE_HTML_FILE', str(temperature))

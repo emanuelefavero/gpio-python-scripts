@@ -1,12 +1,74 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Pico W</title>
-    </head>
-    <body>
-        <h1>Pico W</h1>
-        <p>Control the onboard LED</p>
-        <a href=\"?led=on\"><button>ON</button></a>&nbsp;
-        <a href=\"?led=off\"><button>OFF</button></a>
-    </body>
+  <head>
+    <title>Pico W</title>
+
+    <style>
+      :root {
+        --primary: #6366f1;
+        --background: #f8fafc;
+        --foreground: #020617;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #020617;
+          --foreground: #f8fafc;
+        }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Inter',
+          sans-serif;
+        background-color: var(--background);
+        color: var(--foreground);
+
+        min-height: 50vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      h1 {
+        color: var(--primary);
+      }
+
+      button {
+        user-select: none;
+        background-color: var(--primary);
+        color: var(--foreground);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #595cf5;
+      }
+
+      button:active {
+        scale: 0.95;
+      }
+
+      h1, p, a {
+        margin-bottom: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Pico W</h1>
+      <p>Control the onboard LED</p>
+      <a href=\"?led=on\"><button>ON</button></a>&nbsp;
+      <a href=\"?led=off\"><button>OFF</button></a>
+    </main>
+  </body>
 </html>

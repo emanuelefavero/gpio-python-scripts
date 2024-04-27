@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Pico W</title>
+        <style>
+            #temperatureContainer {
+                color: magenta;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Pico W</h1>
+        <h3>Temperature:</h3>
+        <p><span id='temperature'> TemperaturePlaceholder </span></p>
+        <div id='temperatureContainer'><span id='formattedTemperature'></span>&#8451;</div>
+        <h3>Control the onboard LED</h3>
+        <a href=\"?led=on\"><button>ON</button></a>&nbsp;
+        <a href=\"?led=off\"><button>OFF</button></a>
+        <script>
+            let temperature = document.getElementById('temperature')
+            let temperatureValue =  temperature.textContent
+            temperature.style.display = 'none'
+            document.getElementById('formattedTemperature').innerHTML = parseFloat(temperatureValue).toFixed(1)
+            console.log(temperatureValue)
+        </script>
+    </body>
+</html>

@@ -31,8 +31,8 @@ break_led = Pin(16, Pin.OUT)
 break_button = Pin(17, Pin.IN, Pin.PULL_DOWN)
 
 # Constants
-POMODORO_DURATION = 25 * 60  # 25 minutes
-BREAK_DURATION = 5 * 60  # 5 minutes
+POMODORO_DURATION = 25 * 60  # * 25 minutes
+BREAK_DURATION = 5 * 60  # * 5 minutes
 
 # Timer states
 state = "stopped"  # "stopped", "running", "paused", "finished"

@@ -13,7 +13,7 @@ POMODORO_DURATION = 25 * 60  # 25 minutes
 BREAK_DURATION = 5 * 60  # 5 minutes
 
 # Timer states
-state = "stopped"  # global state: "stopped", "running", "paused", "finished"
+state = "stopped"  # "stopped", "running", "paused", "finished"
 mode = "pomodoro"  # or "break"
 
 start_time = 0
@@ -41,6 +41,7 @@ def reset_all():
     state = "stopped"
     elapsed = 0
     stop_blinking()
+    print("Timers reset")
 
 
 def start_timer(selected_mode):
@@ -129,8 +130,19 @@ def break_button_handler(pin):
 pomodoro_button.irq(trigger=Pin.IRQ_RISING, handler=pomodoro_button_handler)
 break_button.irq(trigger=Pin.IRQ_RISING, handler=break_button_handler)
 
+
+# Check for both buttons being pressed simultaneously
+def check_for_dual_button_press():
+    if pomodoro_button.value() and break_button.value():
+        reset_all()
+        print("Both buttons pressed: Full reset")
+        utime.sleep(0.5)  # debounce / prevent re-trigger
+
+
 # Main loop
 while True:
+    check_for_dual_button_press()
+
     if state == "running":
         duration = POMODORO_DURATION if mode == "pomodoro" else BREAK_DURATION
         total_elapsed = elapsed + (utime.time() - start_time)

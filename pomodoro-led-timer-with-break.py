@@ -1,0 +1,140 @@
+from machine import Pin, Timer
+import utime
+
+# Pin setup
+pomodoro_led = Pin(15, Pin.OUT)
+pomodoro_button = Pin(14, Pin.IN, Pin.PULL_DOWN)
+
+break_led = Pin(16, Pin.OUT)
+break_button = Pin(17, Pin.IN, Pin.PULL_DOWN)
+
+# Constants
+POMODORO_DURATION = 25 * 60  # 25 minutes
+BREAK_DURATION = 5 * 60  # 5 minutes
+
+# Timer states
+state = "stopped"  # global state: "stopped", "running", "paused", "finished"
+mode = "pomodoro"  # or "break"
+
+start_time = 0
+elapsed = 0
+
+# Blinking
+blink_timer = Timer()
+
+
+def stop_blinking():
+    blink_timer.deinit()
+    pomodoro_led.value(0)
+    break_led.value(0)
+
+
+def blink_led(led, frequency):
+    def toggle(timer):
+        led.toggle()
+
+    blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
+
+
+def reset_all():
+    global state, start_time, elapsed
+    state = "stopped"
+    elapsed = 0
+    stop_blinking()
+
+
+def start_timer(selected_mode):
+    global state, mode, start_time, elapsed
+
+    reset_all()
+    mode = selected_mode
+    state = "running"
+    start_time = utime.time()
+
+    if mode == "pomodoro":
+        pomodoro_led.value(1)
+        print("Pomodoro started")
+    else:
+        break_led.value(1)
+        print("Break started")
+
+
+def pause_timer():
+    global state, elapsed
+
+    if mode == "pomodoro":
+        pomodoro_led.value(0)
+        blink_led(pomodoro_led, 1)
+    else:
+        break_led.value(0)
+        blink_led(break_led, 1)
+
+    elapsed += utime.time() - start_time
+    state = "paused"
+    print("Timer paused")
+
+
+def resume_timer():
+    global state, start_time
+
+    stop_blinking()
+    state = "running"
+    start_time = utime.time()
+
+    if mode == "pomodoro":
+        pomodoro_led.value(1)
+    else:
+        break_led.value(1)
+
+    print("Timer resumed")
+
+
+def finish_timer():
+    global state
+    state = "finished"
+
+    if mode == "pomodoro":
+        blink_led(pomodoro_led, 5)
+        print("Pomodoro finished")
+    else:
+        blink_led(break_led, 5)
+        print("Break finished")
+
+
+def handle_button(button_mode):
+    global state, mode
+
+    if mode != button_mode and state == "running":
+        reset_all()
+
+    if mode != button_mode or state == "stopped":
+        start_timer(button_mode)
+    elif state == "running":
+        pause_timer()
+    elif state == "paused":
+        resume_timer()
+    elif state == "finished":
+        start_timer(button_mode)
+
+
+# Interrupts
+def pomodoro_button_handler(pin):
+    handle_button("pomodoro")
+
+
+def break_button_handler(pin):
+    handle_button("break")
+
+
+pomodoro_button.irq(trigger=Pin.IRQ_RISING, handler=pomodoro_button_handler)
+break_button.irq(trigger=Pin.IRQ_RISING, handler=break_button_handler)
+
+# Main loop
+while True:
+    if state == "running":
+        duration = POMODORO_DURATION if mode == "pomodoro" else BREAK_DURATION
+        total_elapsed = elapsed + (utime.time() - start_time)
+        if total_elapsed >= duration:
+            finish_timer()
+
+    utime.sleep(0.1)

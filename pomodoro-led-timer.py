@@ -1,10 +1,10 @@
-from machine import Pin, Timer
-import utime
-
 # TODO Add blue LED for 5 minutes rest time
 # TODO Decide if it's better to turn off the light when the timer finished
 # TODO Add a way to reset the timer and turn off the lights
 # (e.g. long press    double press or press both buttons)
+
+from machine import Pin, Timer
+import utime
 
 # Pin setup
 led = Pin(15, Pin.OUT)

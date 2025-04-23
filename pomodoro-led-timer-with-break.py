@@ -1,5 +1,27 @@
+"""
+Pomodoro LED Timer with Break Functionality
+
+Connect the following pins of Raspberry Pi Pico:
+- LED: Pin 15
+- Button: Pin 14
+- Break LED: Pin 16
+- Break Button: Pin 17
+
+How to use it:
+1. Press the Pin 14 button to start the Pomodoro timer.
+2. The LED will turn on.
+3. Press the Pin 14 button again to pause the timer (LED will blink slowly).
+4. Press the Pin 14 button again to resume the timer (LED will turn on).
+5. Press the Pin 17 button to start the break timer.
+6. The Break LED will turn on.
+7. Press the Pin 17 button again to pause the break timer
+8. Press the Pin 17 button again to resume the break timer
+9. Press both buttons simultaneously to reset all timers.
+"""
+
 from machine import Pin, Timer
 import utime
+
 
 # Pin setup
 pomodoro_led = Pin(15, Pin.OUT)

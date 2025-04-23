@@ -1,3 +1,21 @@
+"""
+Pomodoro LED Timer
+
+Connect the following pins of Raspberry Pi Pico:
+
+- LED: Pin 15
+- Button: Pin 14
+
+How to use it:
+1. Press the Pin 14 button to start the Pomodoro timer.
+2. The LED will turn on.
+3. Press the Pin 14 button again to pause the timer (LED will blink slowly).
+4. Press the Pin 14 button again to resume the timer (LED will turn on).
+5. Press the Pin 14 button for 1 second to reset the timer.
+6. The LED will blink quickly to indicate the timer has finished.
+7. Press the Pin 14 button to reset the timer and turn off the LED.
+"""
+
 from machine import Pin, Timer
 import utime
 
@@ -7,7 +25,7 @@ button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 # Constants
 POMODORO_DURATION = 25 * 60  # 25 minutes in seconds
-LONG_PRESS_DURATION = 2  # seconds
+LONG_PRESS_DURATION = 1  # seconds
 
 # State variables
 state = "stopped"  # "stopped", "running", "paused", "finished"
@@ -54,12 +72,11 @@ def button_handler(pin):
         print("Timer resumed")
 
     elif state == "finished":
-        state = "running"
-        start_time = utime.time()
-        elapsed = 0
+        # Reset timer and LED, return to 'stopped' state
         stop_blinking()
-        led.value(1)
-        print("Timer restarted after finish")
+        state = "stopped"
+        elapsed = 0
+        print("Timer reset after finish, ready to start again")
 
 
 # Attach interrupt for rising edge

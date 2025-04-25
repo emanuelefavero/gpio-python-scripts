@@ -24,16 +24,18 @@ led = Pin(15, Pin.OUT)
 button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 # Constants
-DURATION = 6 * 60  # * 6 minutes in seconds
+DURATION = 6 * 60  # 6 minutes in seconds
 LONG_PRESS_DURATION = 1  # seconds
+DEBOUNCE_TIME = 200  # milliseconds
 
 # State variables
 state = "stopped"  # "stopped", "running", "paused", "finished"
 start_time = 0
 elapsed = 0
 press_time = None
+last_button_press = 0  # for debounce
 
-# Blinking timers
+# Blinking timer
 blink_timer = Timer()
 
 
@@ -47,6 +49,14 @@ def blink_led(frequency):
         led.toggle()
 
     blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
+
+
+def debounced_button_handler(pin):
+    global last_button_press
+    now = utime.ticks_ms()
+    if utime.ticks_diff(now, last_button_press) >= DEBOUNCE_TIME:
+        last_button_press = now
+        button_handler(pin)
 
 
 def button_handler(pin):
@@ -72,35 +82,32 @@ def button_handler(pin):
         print("Timer resumed")
 
     elif state == "finished":
-        # Reset timer and LED, return to 'stopped' state
         stop_blinking()
         state = "stopped"
         elapsed = 0
         print("Timer reset after finish, ready to start again")
 
 
-# Attach interrupt for rising edge
-button.irq(trigger=Pin.IRQ_RISING, handler=button_handler)
+# Attach debounced interrupt
+button.irq(trigger=Pin.IRQ_RISING, handler=debounced_button_handler)
 
 
 def check_long_press():
     global state, start_time, elapsed, press_time
 
-    elapsed_ms = utime.ticks_diff(utime.ticks_ms(), press_time)
-
     if button.value():
         if press_time is None:
             press_time = utime.ticks_ms()
-        elif elapsed_ms >= LONG_PRESS_DURATION * 1000:
-            # Long press detected
-            press_time = None
-            state = "stopped"
-            elapsed = 0
-            stop_blinking()
-            print("Timer reset by long press")
-            # Wait until button is released to avoid re-triggering
-            while button.value():
-                utime.sleep(0.01)
+        else:
+            elapsed_ms = utime.ticks_diff(utime.ticks_ms(), press_time)
+            if elapsed_ms >= LONG_PRESS_DURATION * 1000:
+                press_time = None
+                state = "stopped"
+                elapsed = 0
+                stop_blinking()
+                print("Timer reset by long press")
+                while button.value():
+                    utime.sleep(0.01)
     else:
         press_time = None
 

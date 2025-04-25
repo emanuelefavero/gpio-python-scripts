@@ -61,7 +61,7 @@ def button_handler(pin):
     elif state == "running":
         state = "paused"
         elapsed += utime.time() - start_time
-        blink_led(1)
+        blink_led(2)
         print("Timer paused")
 
     elif state == "paused":

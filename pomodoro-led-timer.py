@@ -92,7 +92,8 @@ button.irq(trigger=Pin.IRQ_RISING, handler=button_handler)
 def check_long_press():
     global state, start_time, elapsed, press_time
 
-    elapsed_ms = utime.ticks_diff(utime.ticks_ms(), press_time) if press_time else 0
+    ms = utime.ticks_ms()
+    elapsed_ms = utime.ticks_diff(ms, press_time) if press_time else 0
 
     if button.value():
         if press_time is None:

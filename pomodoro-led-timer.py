@@ -24,14 +24,16 @@ led = Pin(15, Pin.OUT)
 button = Pin(14, Pin.IN, Pin.PULL_DOWN)
 
 # Constants
-POMODORO_DURATION = 25 * 60  # * 25 minutes in seconds
+POMODORO_DURATION = 25 * 60  # 25 minutes in seconds
 LONG_PRESS_DURATION = 1  # seconds
+DEBOUNCE_TIME = 200  # milliseconds
 
 # State variables
 state = "stopped"  # "stopped", "running", "paused", "finished"
 start_time = 0
 elapsed = 0
 press_time = None
+last_press_time = 0  # for debouncing
 
 # Blinking timers
 blink_timer = Timer()
@@ -50,7 +52,13 @@ def blink_led(frequency):
 
 
 def button_handler(pin):
-    global state, start_time, elapsed
+    global state, start_time, elapsed, last_press_time
+
+    current_time = utime.ticks_ms()
+    if utime.ticks_diff(current_time, last_press_time) < DEBOUNCE_TIME:
+        return  # Ignore this press, too soon (bounced)
+
+    last_press_time = current_time
 
     if state == "stopped":
         state = "running"
@@ -72,33 +80,29 @@ def button_handler(pin):
         print("Timer resumed")
 
     elif state == "finished":
-        # Reset timer and LED, return to 'stopped' state
         stop_blinking()
         state = "stopped"
         elapsed = 0
         print("Timer reset after finish, ready to start again")
 
 
-# Attach interrupt for rising edge
 button.irq(trigger=Pin.IRQ_RISING, handler=button_handler)
 
 
 def check_long_press():
     global state, start_time, elapsed, press_time
 
-    elapsed_ms = utime.ticks_diff(utime.ticks_ms(), press_time)
+    elapsed_ms = utime.ticks_diff(utime.ticks_ms(), press_time) if press_time else 0
 
     if button.value():
         if press_time is None:
             press_time = utime.ticks_ms()
         elif elapsed_ms >= LONG_PRESS_DURATION * 1000:
-            # Long press detected
             press_time = None
             state = "stopped"
             elapsed = 0
             stop_blinking()
             print("Timer reset by long press")
-            # Wait until button is released to avoid re-triggering
             while button.value():
                 utime.sleep(0.01)
     else:

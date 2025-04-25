@@ -18,7 +18,6 @@ How to use it:
 8. Press the Pin 14 button to reset the timer and turn off the LED.
 """
 
-# TODO make the led blink a bit faster when the timer is paused
 # TODO debounce button press more while still retaining the same buzzer speed
 
 from machine import Pin, Timer, PWM
@@ -77,7 +76,7 @@ def button_handler(pin):
     elif state == "running":
         state = "paused"
         elapsed += utime.time() - start_time
-        blink_led(1)
+        blink_led(2)
         print("Timer paused")
 
     elif state == "paused":

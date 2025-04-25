@@ -18,8 +18,6 @@ How to use it:
 8. Press the Pin 14 button to reset the timer and turn off the LED.
 """
 
-# TODO debounce button press more while still retaining the same buzzer speed
-
 from machine import Pin, Timer, PWM
 import utime
 
@@ -32,12 +30,14 @@ buzzer.duty_u16(0)
 # Constants
 DURATION = 6 * 60  # 6 minutes
 LONG_PRESS_DURATION = 1  # seconds
+DEBOUNCE_TIME = 200  # milliseconds
 
 # State variables
 state = "stopped"
 start_time = 0
 elapsed = 0
 press_time = None
+last_press_time = 0  # for debouncing
 
 # Buzzer state
 buzzer_on = False
@@ -65,7 +65,13 @@ def blink_led(frequency):
 
 
 def button_handler(pin):
-    global state, start_time, elapsed
+    global state, start_time, elapsed, last_press_time
+
+    current_time = utime.ticks_ms()
+    if utime.ticks_diff(current_time, last_press_time) < DEBOUNCE_TIME:
+        return  # debounce: ignore quick repeated presses
+
+    last_press_time = current_time
 
     if state == "stopped":
         state = "running"
@@ -99,7 +105,9 @@ button.irq(trigger=Pin.IRQ_RISING, handler=button_handler)
 def check_long_press():
     global state, press_time, elapsed
 
-    elapsed_since_press = utime.ticks_diff(utime.ticks_ms(), press_time)
+    elapsed_since_press = (
+        utime.ticks_diff(utime.ticks_ms(), press_time) if press_time else 0
+    )
 
     if button.value():
         if press_time is None:
@@ -157,11 +165,11 @@ while True:
                 buzzer.freq(buzzer_freqs[buzzer_current_index])
                 buzzer.duty_u16(32768)
                 buzzer_stage = 1
-                now = utime.ticks_ms()
-                buzzer_next_time = utime.ticks_add(now, buzzer_duration)
+                ms = utime.ticks_ms()
+                buzzer_next_time = utime.ticks_add(ms, buzzer_duration)
             else:
                 buzzer.duty_u16(0)
                 buzzer_on = False
                 buzzer_stage = 0
 
-    utime.sleep(0.085)  # This will also decide the speed of the buzzer sounds
+    utime.sleep(0.085)

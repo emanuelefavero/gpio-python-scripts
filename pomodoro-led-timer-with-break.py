@@ -22,7 +22,6 @@ How to use it:
 from machine import Pin, Timer
 import utime
 
-
 # Pin setup
 pomodoro_led = Pin(15, Pin.OUT)
 pomodoro_button = Pin(14, Pin.IN, Pin.PULL_DOWN)
@@ -31,18 +30,23 @@ break_led = Pin(16, Pin.OUT)
 break_button = Pin(17, Pin.IN, Pin.PULL_DOWN)
 
 # Constants
-POMODORO_DURATION = 25 * 60  # * 25 minutes
-BREAK_DURATION = 5 * 60  # * 5 minutes
+POMODORO_DURATION = 25 * 60
+BREAK_DURATION = 5 * 60
+DEBOUNCE_TIME = 200  # milliseconds
 
 # Timer states
-state = "stopped"  # "stopped", "running", "paused", "finished"
-mode = "pomodoro"  # or "break"
+state = "stopped"
+mode = "pomodoro"
 
 start_time = 0
 elapsed = 0
 
 # Blinking
 blink_timer = Timer()
+
+# Last press timestamps for debouncing
+last_pomodoro_press = 0
+last_break_press = 0
 
 
 def stop_blinking():
@@ -140,25 +144,32 @@ def handle_button(button_mode):
         start_timer(button_mode)
 
 
-# Interrupts
+# Interrupts with debounce
 def pomodoro_button_handler(pin):
-    handle_button("pomodoro")
+    global last_pomodoro_press
+    now = utime.ticks_ms()
+    if utime.ticks_diff(now, last_pomodoro_press) >= DEBOUNCE_TIME:
+        last_pomodoro_press = now
+        handle_button("pomodoro")
 
 
 def break_button_handler(pin):
-    handle_button("break")
+    global last_break_press
+    now = utime.ticks_ms()
+    if utime.ticks_diff(now, last_break_press) >= DEBOUNCE_TIME:
+        last_break_press = now
+        handle_button("break")
 
 
 pomodoro_button.irq(trigger=Pin.IRQ_RISING, handler=pomodoro_button_handler)
 break_button.irq(trigger=Pin.IRQ_RISING, handler=break_button_handler)
 
 
-# Check for both buttons being pressed simultaneously
 def check_for_dual_button_press():
     if pomodoro_button.value() and break_button.value():
         reset_all()
         print("Both buttons pressed: Full reset")
-        utime.sleep(0.5)  # debounce / prevent re-trigger
+        utime.sleep(0.5)  # avoid retriggering
 
 
 # Main loop

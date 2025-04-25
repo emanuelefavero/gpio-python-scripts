@@ -87,10 +87,10 @@ def pause_timer():
 
     if mode == "pomodoro":
         pomodoro_led.value(0)
-        blink_led(pomodoro_led, 1)
+        blink_led(pomodoro_led, 2)
     else:
         break_led.value(0)
-        blink_led(break_led, 1)
+        blink_led(break_led, 2)
 
     elapsed += utime.time() - start_time
     state = "paused"

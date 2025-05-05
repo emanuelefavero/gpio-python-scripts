@@ -22,7 +22,7 @@ tm.brightness(1)  # Brightness: 0 (dim) to 7 (bright)
 # tm.write([127, 255, 127, 127]) # 88:88
 # tm.write([63, 6, 91, 79]) # 0123
 # tm.write([0b00111001, 0b00111111, 0b00111111, 0b00111000]) # COOL
-# tm.numbers(21, 15) # 18:59
+# tm.numbers(21, 15) # 21:59
 # tm.number(-123) # -123
 # tm.temperature(24) # 24*C
 # tm.scroll("Hello ")  # Scroll text

@@ -1,6 +1,8 @@
 """
 Simple Timer With Buzzer and Display
 
+NOTE: Do not forget to add `tm1637.py` to the Raspberry Pi Pico
+
 Connect the following pins of Raspberry Pi Pico:
 
 - LED: Pin 15

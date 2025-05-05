@@ -1,3 +1,31 @@
+"""
+Pomodoro LED Timer with Break, Buzzer and Display
+
+NOTE: Do not forget to add `tm1637.py` to the Raspberry Pi Pico
+
+Connect the following pins of Raspberry Pi Pico:
+- LED: Pin 15
+- Button: Pin 14
+- Break LED: Pin 16
+- Break Button: Pin 17
+- Buzzer: Pin 27
+- TM1637 Display: CLK=Pin 2, DIO=Pin 3
+
+How to use it:
+1. Press the Pin 14 button to start the Pomodoro timer.
+2. The LED will turn on and the display will show the countdown.
+3. Press the Pin 14 button again to pause the timer
+4. LED will blink slowly and the display will freeze.
+5. Press the Pin 14 button again to resume the timer
+6. LED will turn on and the display will continue the countdown.
+7. Press the Pin 17 button to start the break timer.
+8. The Break LED will turn on and the display will show the break countdown.
+9. Press the Pin 17 button again to pause the break timer
+10. Press the Pin 17 button again to resume the break timer
+11. Press both buttons simultaneously to reset all timers
+12. The LED and display will turn off
+"""
+
 from machine import Pin, Timer, PWM
 import utime
 import tm1637

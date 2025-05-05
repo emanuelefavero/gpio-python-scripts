@@ -82,7 +82,8 @@ def blink_display(frequency):
         global display_visible
         display_visible = not display_visible
         if display_visible:
-            update_display(DURATION if elapsed >= DURATION else DURATION - elapsed)
+            elpsd = elapsed
+            update_display(DURATION if elpsd >= DURATION else DURATION - elpsd)
         else:
             tm.write([0, 0, 0, 0])
 

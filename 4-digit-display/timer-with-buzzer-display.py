@@ -1,3 +1,26 @@
+"""
+Simple Timer With Buzzer and Display
+
+Connect the following pins of Raspberry Pi Pico:
+
+- LED: Pin 15
+- Button: Pin 14
+- Buzzer: Pin 27
+- TM1637 Display: CLK=Pin 2, DIO=Pin 3
+
+How to use it:
+1. Press the Pin 14 button to start the timer.
+2. The LED will turn on and the display will show the countdown.
+3. Press the Pin 14 button again to pause the timer
+4. The LED will blink slowly and the display will freeze.
+5. Press the Pin 14 button again to resume the timer
+6. LED will turn on and the display will continue the countdown.
+7. Press the Pin 14 button for 1 second to reset the timer.
+8. The LED and display will blink quickly to indicate the timer has finished.
+9. The buzzer will sound a series of tones when the timer finishes.
+10. Press the Pin 14 button to reset the timer and turn off the LED and display.
+"""
+
 from machine import Pin, Timer, PWM
 import utime
 import tm1637

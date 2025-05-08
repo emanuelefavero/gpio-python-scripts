@@ -105,6 +105,16 @@ def blink_led_and_display(frequency):
     blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
 
 
+def blink_led_only(frequency):
+    def toggle(timer):
+        if mode == "pomodoro":
+            pomodoro_led.toggle()
+        else:
+            break_led.toggle()
+
+    blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
+
+
 def clear_display():
     tm.write([0, 0, 0, 0])
 
@@ -144,7 +154,7 @@ def pause_timer():
     global state, elapsed
     elapsed += utime.time() - start_time
     state = "paused"
-    blink_led_and_display(2)
+    blink_led_only(2)  # Only blink LED, not display
     print("Timer paused")
 
 

@@ -89,7 +89,8 @@ def blink_display(frequency):
         else:
             tm.write([0, 0, 0, 0])
 
-    display_blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
+    p = Timer.PERIODIC
+    display_blink_timer.init(freq=frequency, mode=p, callback=toggle)
 
 
 def update_display(seconds):
@@ -160,7 +161,7 @@ def check_long_press():
             elapsed = 0
             stop_blinking()
             clear_display()
-            ignore_next_release = True  # NEW: prevent short press from triggering
+            ignore_next_release = True  # prevent short press from triggering
             print("Timer reset by long press")
             while button.value():
                 utime.sleep(0.01)

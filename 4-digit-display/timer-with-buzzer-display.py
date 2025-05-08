@@ -49,6 +49,7 @@ start_time = 0
 elapsed = 0
 press_time = None
 last_press_time = 0
+ignore_next_release = False  # NEW: flag to ignore short press after long press
 
 # Buzzer state
 buzzer_on = False
@@ -102,12 +103,16 @@ def clear_display():
 
 
 def button_handler(pin):
-    global state, start_time, elapsed, last_press_time
+    global state, start_time, elapsed, last_press_time, ignore_next_release
 
     current_time = utime.ticks_ms()
     if utime.ticks_diff(current_time, last_press_time) < DEBOUNCE_TIME:
         return
     last_press_time = current_time
+
+    if ignore_next_release:
+        ignore_next_release = False
+        return
 
     if state == "stopped":
         state = "running"
@@ -140,7 +145,7 @@ button.irq(trigger=Pin.IRQ_RISING, handler=button_handler)
 
 
 def check_long_press():
-    global state, press_time, elapsed
+    global state, press_time, elapsed, ignore_next_release
 
     elapsed_since_press = (
         utime.ticks_diff(utime.ticks_ms(), press_time) if press_time else 0
@@ -155,6 +160,7 @@ def check_long_press():
             elapsed = 0
             stop_blinking()
             clear_display()
+            ignore_next_release = True  # NEW: prevent short press from triggering
             print("Timer reset by long press")
             while button.value():
                 utime.sleep(0.01)

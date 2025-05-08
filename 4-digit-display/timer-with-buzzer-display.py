@@ -59,14 +59,15 @@ buzzer_silence = 0
 buzzer_freqs = []
 buzzer_current_index = 0
 
-# Blink timer
-blink_timer = Timer()
-display_blink = False
+# Blink timers
+led_blink_timer = Timer()
+display_blink_timer = Timer()
 display_visible = True
 
 
 def stop_blinking():
-    blink_timer.deinit()
+    led_blink_timer.deinit()
+    display_blink_timer.deinit()
     led.value(0)
 
 
@@ -74,7 +75,7 @@ def blink_led(frequency):
     def toggle(timer):
         led.toggle()
 
-    blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
+    led_blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
 
 
 def blink_display(frequency):
@@ -87,7 +88,7 @@ def blink_display(frequency):
         else:
             tm.write([0, 0, 0, 0])
 
-    blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
+    display_blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
 
 
 def update_display(seconds):

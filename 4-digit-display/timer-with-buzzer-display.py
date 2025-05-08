@@ -49,7 +49,7 @@ start_time = 0
 elapsed = 0
 press_time = None
 last_press_time = 0
-ignore_next_release = False  # NEW: flag to ignore short press after long press
+ignore_next_release = False  # flag to ignore short press after long press
 
 # Buzzer state
 buzzer_on = False

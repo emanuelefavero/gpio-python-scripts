@@ -91,7 +91,8 @@ def blink_led_and_display(frequency):
         global display_visible
         display_visible = not display_visible
         if display_visible:
-            remaining = POMODORO_DURATION if mode == "pomodoro" else BREAK_DURATION
+            pomodoro_dur = POMODORO_DURATION
+            remaining = pomodoro_dur if mode == "pomodoro" else BREAK_DURATION
             update_display(remaining - elapsed)
         else:
             clear_display()

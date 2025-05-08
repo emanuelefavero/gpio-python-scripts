@@ -47,6 +47,7 @@ tm.write([0, 0, 0, 0])
 POMODORO_DURATION = 25 * 60  # 25 minutes
 BREAK_DURATION = 5 * 60  # 5 minutes
 DEBOUNCE_TIME = 200  # milliseconds
+DUAL_PRESS_IGNORE_TIME = 500  # ms to ignore accidental presses after reset
 
 # State
 state = "stopped"
@@ -75,34 +76,32 @@ buzzer_current_index = 0
 # Debounce tracking
 last_pomodoro_press = 0
 last_break_press = 0
+last_reset_time = 0
 
 
 def stop_blinking():
     blink_timer.deinit()
+    display_timer.deinit()
     pomodoro_led.value(0)
     break_led.value(0)
 
 
-def blink_led(led, frequency):
-    def toggle(timer):
-        led.toggle()
-
-    blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
-
-
-def blink_display(frequency):
+def blink_led_and_display(frequency):
     def toggle(timer):
         global display_visible
         display_visible = not display_visible
         if display_visible:
-            break_dur = BREAK_DURATION
-            seconds = POMODORO_DURATION if mode == "pomodoro" else break_dur
-            if elapsed < seconds:
-                update_display(seconds - elapsed)
+            remaining = POMODORO_DURATION if mode == "pomodoro" else BREAK_DURATION
+            update_display(remaining - elapsed)
         else:
             clear_display()
 
-    display_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
+        if mode == "pomodoro":
+            pomodoro_led.toggle()
+        else:
+            break_led.toggle()
+
+    blink_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=toggle)
 
 
 def clear_display():
@@ -116,13 +115,13 @@ def update_display(seconds):
 
 
 def reset_all():
-    global state, start_time, elapsed, display_visible
+    global state, start_time, elapsed, display_visible, last_reset_time
     state = "stopped"
     elapsed = 0
     stop_blinking()
-    display_timer.deinit()  # Stop blinking the display
-    display_visible = False  # Ensure display stays off
+    display_visible = False
     clear_display()
+    last_reset_time = utime.ticks_ms()
     print("Timers reset")
 
 
@@ -142,22 +141,15 @@ def start_timer(selected_mode):
 
 def pause_timer():
     global state, elapsed
-    if mode == "pomodoro":
-        pomodoro_led.value(0)
-        blink_led(pomodoro_led, 2)
-    else:
-        break_led.value(0)
-        blink_led(break_led, 2)
-    blink_display(2)
     elapsed += utime.time() - start_time
     state = "paused"
+    blink_led_and_display(2)
     print("Timer paused")
 
 
 def resume_timer():
     global state, start_time
     stop_blinking()
-    display_timer.deinit()
     state = "running"
     start_time = utime.time()
     if mode == "pomodoro":
@@ -170,8 +162,7 @@ def resume_timer():
 def finish_timer():
     global state
     state = "finished"
-    blink_led(pomodoro_led if mode == "pomodoro" else break_led, 5)
-    blink_display(2)
+    blink_led_and_display(2)
     print("Pomodoro finished" if mode == "pomodoro" else "Break finished")
     freqs = [792, 745, 633, 444, 414, 664, 837, 1060]
     activate_buzzer(duration=1, silence=1, freqs=freqs)
@@ -179,6 +170,9 @@ def finish_timer():
 
 def handle_button(button_mode):
     global state, mode
+    now = utime.ticks_ms()
+    if utime.ticks_diff(now, last_reset_time) < DUAL_PRESS_IGNORE_TIME:
+        return  # Ignore accidental presses after reset
     if mode != button_mode and state == "running":
         reset_all()
     if mode != button_mode or state == "stopped":
@@ -207,18 +201,14 @@ def break_button_handler(pin):
         handle_button("break")
 
 
-pomodoro_button.irq(trigger=Pin.IRQ_RISING, handler=pomodoro_button_handler)
-break_button.irq(trigger=Pin.IRQ_RISING, handler=break_button_handler)
-
-
 def check_for_dual_button_press():
     if pomodoro_button.value() and break_button.value():
         reset_all()
         print("Both buttons pressed: Full reset")
-        utime.sleep(0.5)
+        utime.sleep_ms(DUAL_PRESS_IGNORE_TIME)
 
 
-def activate_buzzer(duration=150, silence=150, freqs=[620, 720]):
+def activate_buzzer(duration=1, silence=1, freqs=[620, 720]):
     global buzzer_on, buzzer_stage, buzzer_next_time
     global buzzer_duration, buzzer_silence
     global buzzer_freqs, buzzer_current_index
@@ -233,6 +223,9 @@ def activate_buzzer(duration=150, silence=150, freqs=[620, 720]):
     buzzer.duty_u16(32768)
     buzzer_next_time = utime.ticks_add(utime.ticks_ms(), buzzer_duration)
 
+
+pomodoro_button.irq(trigger=Pin.IRQ_RISING, handler=pomodoro_button_handler)
+break_button.irq(trigger=Pin.IRQ_RISING, handler=break_button_handler)
 
 # Main loop
 while True:
@@ -249,11 +242,11 @@ while True:
         if total_elapsed >= duration:
             finish_timer()
 
-    if state == "paused":
+    elif state == "paused":
         duration = POMODORO_DURATION if mode == "pomodoro" else BREAK_DURATION
         update_display(int(duration - elapsed))
 
-    if state == "stopped":
+    elif state == "stopped":
         clear_display()
 
     if buzzer_on and utime.ticks_diff(now, buzzer_next_time) >= 0:

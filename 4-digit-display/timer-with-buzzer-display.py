@@ -198,8 +198,8 @@ while True:
             last_display_update = now
         if total_elapsed >= DURATION:
             state = "finished"
-            blink_led(5)
-            blink_display(2)
+            blink_led(3)
+            blink_display(3)
             activate_buzzer(duration=1, silence=1, freqs=freqs)
             print("Timer finished")
 
